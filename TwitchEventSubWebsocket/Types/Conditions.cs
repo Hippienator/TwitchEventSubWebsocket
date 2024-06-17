@@ -9,18 +9,18 @@ namespace Hipbotnator.TwitchEventSubWebsocket.Types
 {
     public class Conditions
     {
-        public string BroadcasterUserID { get; } = null;
-        public string ModeratorUserID { get; } = null;
-        public string UserID { get; } = null;
-        public string FromBroadcasterUserID { get; } = null;
-        public string ToBroadcasterUserID { get; } = null;
-        public string RewardID { get; } = null;
-        public string ClientID { get; } = null;
-        public string ConduitID { get; } = null;
-        public string OrganizationID { get; } = null;
-        public string CategoryID { get; } = null;
-        public string CampaignID { get; } = null;
-        public string ExtensionClientID { get; } = null;
+        public string? BroadcasterUserID { get; } = null;
+        public string? ModeratorUserID { get; } = null;
+        public string? UserID { get; } = null;
+        public string? FromBroadcasterUserID { get; } = null;
+        public string? ToBroadcasterUserID { get; } = null;
+        public string? RewardID { get; } = null;
+        public string? ClientID { get; } = null;
+        public string? ConduitID { get; } = null;
+        public string? OrganizationID { get; } = null;
+        public string? CategoryID { get; } = null;
+        public string? CampaignID { get; } = null;
+        public string? ExtensionClientID { get; } = null;
 
         public Conditions(JObject conditions)
         {
