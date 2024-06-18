@@ -9,6 +9,9 @@ namespace Hipbotnator.TwitchEventSubWebsocket.Types.Event
 {
     public class RevocationEventArgs : EventArgs
     {
+        /// <summary>
+        /// The ID of the subscription being revoked
+        /// </summary>
         public string SubscriptionID { get; }
         public string Status { get; }
         public string Type { get; }

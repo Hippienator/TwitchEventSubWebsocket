@@ -8,8 +8,19 @@ namespace Hipbotnator.TwitchEventSubWebsocket.Types.Event
 {
     public class ChannelFollowEventArgs : EventArgs
     {
+        /// <summary>
+        /// User who followed.
+        /// </summary>
         public User User { get; }
+
+        /// <summary>
+        /// Broadcaster that got the follow.
+        /// </summary>
         public User Broadcaster { get; }
+
+        /// <summary>
+        /// The time the follow happened.
+        /// </summary>
         public DateTime FollowedAt { get; }
 
         public ChannelFollowEventArgs(string userID, string userLogin, string userDisplayname, string broadcasterID, string broadcasterLogin, 
