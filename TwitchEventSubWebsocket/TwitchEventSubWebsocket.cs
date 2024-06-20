@@ -10,6 +10,7 @@ using TwitchEventSubWebsocket.Types.Event;
 using Hipbotnator.TwitchEventSubWebsocket.Types.Event;
 using System.Collections.Generic;
 using Timer = System.Timers.Timer;
+using Hipbotnator.TwitchEventSubWebsocket.Types;
 
 namespace TwitchEventSubWebsocket
 {
@@ -48,6 +49,10 @@ namespace TwitchEventSubWebsocket
         /// </summary>
         public event EventHandler<RaidEventArgs> OnRaid;
 
+        /// <summary>
+        /// Fires when a monitored channel updates its stream information.
+        /// </summary>
+        public event EventHandler<ChannelUpdateEventArgs> OnChannelUpdate;
         #endregion
 
         public EventSubWebsocket(string url)
@@ -182,6 +187,14 @@ namespace TwitchEventSubWebsocket
                         OnRaid?.Invoke(this, new RaidEventArgs((string)args["from_broadcaster_user_id"], (string)args["from_broadcaster_user_login"], 
                             (string)args["from_broadcaster_user_name"], (string)args["to_broadcaster_user_id"], (string)args["to_broadcaster_user_login"], 
                             (string)args["to_broadcaster_user_name"], (int)args["viewers"]));
+                        break;
+                    }
+
+                case "channel.update":
+                    {
+                        User broadcaster = new User((string)args["broadcaster_user_id"], (string)args["broadcaster_user_login"], (string)args["broadcaster_user_name"]);
+                        OnChannelUpdate?.Invoke(this, new ChannelUpdateEventArgs(broadcaster, (string)args["title"], (string)args["language"], (string)args["category_id"],
+                            (string)args["category_name"], args["content_classification_labels"]?.ToObject<string[]>()));
                         break;
                     }
             }
