@@ -53,6 +53,12 @@ namespace TwitchEventSubWebsocket
         /// Fires when a monitored channel updates its stream information.
         /// </summary>
         public event EventHandler<ChannelUpdateEventArgs> OnChannelUpdate;
+
+        /// <summary>
+        /// Fires when someone subscribes to a channel being monitored for new subscriptions. Does not fire on resubs.
+        /// </summary>
+        public event EventHandler<ChannelSubscribeEventArgs> OnChannelSubscribe;
+
         #endregion
 
         public EventSubWebsocket(string url)
@@ -195,6 +201,14 @@ namespace TwitchEventSubWebsocket
                         User broadcaster = new User((string)args["broadcaster_user_id"], (string)args["broadcaster_user_login"], (string)args["broadcaster_user_name"]);
                         OnChannelUpdate?.Invoke(this, new ChannelUpdateEventArgs(broadcaster, (string)args["title"], (string)args["language"], (string)args["category_id"],
                             (string)args["category_name"], args["content_classification_labels"]?.ToObject<string[]>()));
+                        break;
+                    }
+
+                case "channel.subscribe":
+                    {
+                        User user = new User((string)args["user_id"], (string)args["user_login"], (string)args["user_name"]);
+                        User broadcaster = new User((string)args["broadcaster_user_id"], (string)args["broadcaster_user_login"], (string)args["broadcaster_user_name"]);
+                        OnChannelSubscribe?.Invoke(this, new ChannelSubscribeEventArgs(user, broadcaster, (int)args["tier"], (bool)args["is_gift"]));
                         break;
                     }
             }
