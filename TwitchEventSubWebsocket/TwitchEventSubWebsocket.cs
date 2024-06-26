@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 using Websocket.Client;
 using TwitchEventSubWebsocket.Communication;
 using TwitchEventSubWebsocket.Types.Event;
-using Hipbotnator.TwitchEventSubWebsocket.Types.Event;
 using System.Collections.Generic;
 using Timer = System.Timers.Timer;
-using Hipbotnator.TwitchEventSubWebsocket.Types;
+using TwitchEventSubWebsocket.Types;
+using TwitchEventSubWebsocket.SubcriptionHandling;
 
 namespace TwitchEventSubWebsocket
 {
@@ -19,7 +19,28 @@ namespace TwitchEventSubWebsocket
         /// <summary>
         /// The ID of the websocket connection.
         /// </summary>
-        public string? SessionID;
+        public string? SessionID 
+        {
+            get { return sessionID; } 
+            set { if (Subscribe != null) Subscribe.WebsocketID = value; sessionID = value; } 
+        }
+
+        /// <summary>
+        /// Client ID associated with using the Twitch API. Only required if you want this to handle making subscriptions to the EventSub.
+        /// </summary>
+        public string ClientID { get; set; }
+
+        /// <summary>
+        /// The access token for the Twitch API. Only required if you want this to handle making subscriptions to the EventSub.
+        /// </summary>
+        public string AccessToken;
+
+        /// <summary>
+        /// Set of methods to subscribe to different topics on the EventSub.
+        /// </summary>
+        public SubscriptionHandler Subscribe;
+
+        public string? sessionID;
         private WebsocketClient EventWebsocket;
         private Uri OriginalURI;
         private List<string> MessageIDsOld = new List<string>();
@@ -61,10 +82,9 @@ namespace TwitchEventSubWebsocket
 
         #endregion
 
-        public EventSubWebsocket(string url)
+        public EventSubWebsocket(string url, string clientID = "", string accessToken = "")
         {
-            if (!url.ToLower().StartsWith("wss://"))
-                url = "wss://" + url;
+            Subscribe = new SubscriptionHandler(clientID, accessToken);
             OriginalURI = new Uri(url);
             EventWebsocket = new WebsocketClient(OriginalURI);
             EventWebsocket.IsReconnectionEnabled = false;
@@ -73,6 +93,8 @@ namespace TwitchEventSubWebsocket
             Task.Run(() => Connect(OriginalURI));
             MessageTimer.Elapsed += MessageTimer_Elapsed;
             ReconnectTimer.Elapsed += ReconnectTimer_Elapsed;
+            ClientID = clientID;
+            AccessToken = accessToken;
         }
 
         #region Timer Events
@@ -146,6 +168,7 @@ namespace TwitchEventSubWebsocket
                     {
                         EventWebsocket.ReconnectTimeout = TimeSpan.FromSeconds((int)msg.Payload.Session["keepalive_timeout_seconds"]);
                         MessageTimer.Start();
+                        SessionID = (string)msg.Payload.Session["id"];
                         OnConnected?.Invoke(this, new ConnectedEventArgs((string)msg.Payload.Session["id"], (int)msg.Payload.Session["keepalive_timeout_seconds"]));
                     }
                     break;

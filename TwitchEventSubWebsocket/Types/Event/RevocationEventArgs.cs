@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Hipbotnator.TwitchEventSubWebsocket.Types.Event
+namespace TwitchEventSubWebsocket.Types.Event
 {
     public class RevocationEventArgs : EventArgs
     {

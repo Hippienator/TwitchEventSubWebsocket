@@ -1,4 +1,4 @@
-﻿using Hipbotnator.TwitchEventSubWebsocket.Types;
+﻿using TwitchEventSubWebsocket.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;

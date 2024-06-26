@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Hipbotnator.TwitchEventSubWebsocket.Types
+namespace TwitchEventSubWebsocket.Types
 {
     public class User
     {
