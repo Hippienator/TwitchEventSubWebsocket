@@ -38,7 +38,7 @@ namespace TwitchEventSubWebsocket.Types
             Duration = duration;
             CumulativeGiven = cumulativeGiven;
             Recipient = recipient;
-            Tier = tier;
+            Tier = tier / 1000;
             CommunityGiftID = communityGiftID;
         }
     }

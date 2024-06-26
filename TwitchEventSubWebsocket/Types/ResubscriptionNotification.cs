@@ -54,7 +54,7 @@ namespace TwitchEventSubWebsocket.Types
             CumulativeMonths = cumulativeMonths;
             Duration = duration;
             Streak = streak;
-            Tier = tier;
+            Tier = tier / 1000;
             IsPrime = isPrime;
             IsGift = isGift;
             IsGifterAnon = isGifterAnon;

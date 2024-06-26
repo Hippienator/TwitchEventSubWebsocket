@@ -25,7 +25,7 @@ namespace TwitchEventSubWebsocket.Types
 
         public SubscriptionNotification(int tier, bool isPrime, int duration)
         {
-            Tier = tier;
+            Tier = tier / 1000;
             IsPrime = isPrime;
             Duration = duration;
         }
