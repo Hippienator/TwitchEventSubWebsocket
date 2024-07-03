@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Newtonsoft.Json;
-using TwitchLib.Api;
 
 
 namespace TwitchEventSubWebsocket.SubcriptionHandling
@@ -64,27 +63,16 @@ namespace TwitchEventSubWebsocket.SubcriptionHandling
 
         public bool SubscribeToChatNotification(string broadcasterID, string userID, bool TwitchCLI = false)
         {
-            /*SubParameters json = new SubParameters();
+            //Currently not implemented in the CLI.
+            if (!TwitchCLI)
+                return false;
+
+            SubParameters json = new SubParameters();
             json.type = "channel.chat.notification";
             json.version = "1";
             json.transport.Add("session_id", WebsocketID);
             json.condition.Add("broadcaster_user_id", broadcasterID);
-            json.condition.Add("user_id", userID);*/
-            var json = new
-            {
-                type = "channel.chat.notification",
-                version = "1",
-                condition = new
-                {
-                    broadcaster_user_id = broadcasterID, // The ID of the broadcaster
-                    user_id = userID // The ID of the user (can be the same as broadcaster_user_id)
-                },
-                transport = new
-                {
-                    method = "websocket",
-                    session_id = WebsocketID
-                }
-            };
+            json.condition.Add("user_id", userID);
 
 
             string parameters = JsonConvert.SerializeObject(json);
