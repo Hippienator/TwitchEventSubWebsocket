@@ -13,7 +13,7 @@ namespace TwitchEventSubWebsocket.Types
         public bool IsGifterAnon { get; }
         public User? Gifter {  get; }
 
-        public PayItForwardNotification(bool isGifterAnon, User? gifter)
+        public PayItForwardNotification(bool isGifterAnon, User? gifter = null)
         {
             IsGifterAnon = isGifterAnon;
             Gifter = gifter;

@@ -265,37 +265,145 @@ namespace TwitchEventSubWebsocket
             {
                 case "sub":
                     {
-
+                        JObject subInfo = (JObject)args["sub"];
+                        if (subInfo != null)
+                        {
+                            SubscriptionNotification sub = new SubscriptionNotification((int)subInfo["sub_tier"], (bool)subInfo["is_prime"], (int)subInfo["duration_months"]);
+                            ChatNotificationsEventArgs eventArgs = new ChatNotificationsEventArgs(broadcaster, chatter, isChatterAnon, color, badges, systemMessage,
+                                messageID, message, noticeType, sub);
+                            OnChatNotifications?.Invoke(this, eventArgs);
+                        }
                         break;
                     }
 
                 case "resub":
                     {
+                        JObject resubInfo = (JObject)args["resub"];
+                        if (resubInfo != null)
+                        {
+                            int cumulative = (int)args["cumulative_months"];
+                            int duration = (int)args["duration_months"];
+                            int streak = (int)args["streak_months"];
+                            int tier = (int)args["sub_tier"];
+                            bool isPrime = (bool)args["is_prime"];
+                            bool isGift = (bool)resubInfo["is_gift"];
+                            if (isGift)
+                            {
+                                bool gifterIsAnon = (bool)args["gifter_is_anonymous"];
+                                if (gifterIsAnon)
+                                {
+                                    ResubscriptionNotification resub = new ResubscriptionNotification(cumulative, duration, streak, tier, isPrime, isGift, gifterIsAnon);
+                                    ChatNotificationsEventArgs eventArgs = new ChatNotificationsEventArgs(broadcaster, chatter, isChatterAnon, color, badges, systemMessage,
+                                        messageID, message, noticeType, resub: resub);
+                                    OnChatNotifications?.Invoke(this, eventArgs);
+                                }
+                                else
+                                {
+                                    User user = new User((string)args["gifter_user_id"], (string)args["gifter_user_name"], (string)args["gifter_user_login"]);
+                                    ResubscriptionNotification resub = new ResubscriptionNotification(cumulative, duration, streak, tier, isPrime, isGift, gifterIsAnon, user);
+                                    ChatNotificationsEventArgs eventArgs = new ChatNotificationsEventArgs(broadcaster, chatter, isChatterAnon, color, badges, systemMessage,
+                                        messageID, message, noticeType, resub: resub);
+                                    OnChatNotifications?.Invoke(this, eventArgs);
+                                }
+
+                            }
+                            else
+                            {
+                                ResubscriptionNotification resub = new ResubscriptionNotification(cumulative, duration, streak, tier, isPrime);
+                                ChatNotificationsEventArgs eventArgs = new ChatNotificationsEventArgs(broadcaster, chatter, isChatterAnon, color, badges, systemMessage,
+                                    messageID, message, noticeType, resub: resub);
+                                OnChatNotifications?.Invoke(this, eventArgs);
+                            }
+                        }
                         break;
                     }
 
                 case "sub_gift":
                     {
+                        JObject subGiftInfo = (JObject)args["sub_gift"];
+                        if (subGiftInfo != null)
+                        {
+                            int duration = (int)subGiftInfo["duration_months"];
+                            int cumulative = (int)subGiftInfo["cumulative_total"];
+                            User recipient = new User((string)subGiftInfo["recipient_user_id"], (string)subGiftInfo["recipient_user_name"], (string)subGiftInfo["recipient_user_login"]);
+                            int tier = (int)subGiftInfo["sub_tier"];
+                            string communityGiftID = (string)subGiftInfo["community_gift_id"];
+                            SubscriptionGiftNotification subGift = new SubscriptionGiftNotification(duration, recipient, tier, cumulative, communityGiftID);
+                            ChatNotificationsEventArgs eventArgs = new ChatNotificationsEventArgs(broadcaster, chatter, isChatterAnon, color, badges, systemMessage,
+                                messageID, message, noticeType, subGift: subGift);
+                            OnChatNotifications?.Invoke(this, eventArgs);
+                        }
                         break;
                     }
 
                 case "community_sub_gift":
                     {
+                        JObject comGiftInfo = (JObject)args["community_sub_gift"];
+                        if (comGiftInfo != null)
+                        {
+                            string id = (string)comGiftInfo["id"];
+                            int total = (int)comGiftInfo["total"];
+                            int tier = (int)comGiftInfo["sub_tier"];
+                            int cumulative = (int)comGiftInfo["cumulative_total"];
+                            CommunitySubGiftNotification comSub = new CommunitySubGiftNotification(id, total, tier, cumulative);
+                            ChatNotificationsEventArgs eventArgs = new ChatNotificationsEventArgs(broadcaster, chatter, isChatterAnon, color, badges, systemMessage,
+                                messageID, message, noticeType, communitySubGift: comSub);
+                            OnChatNotifications?.Invoke(this, eventArgs);
+                        }
                         break;
                     }
 
                 case "gift_paid_upgrade":
                     {
+                        JObject giftPaidInfo = (JObject)args["gift_paid_upgrade"];
+                        if (giftPaidInfo != null)
+                        {
+                            bool gifterIsAnon = (bool)giftPaidInfo["gifter_is_anonymous"];
+                            if (gifterIsAnon)
+                            {
+                                GiftPaidUpgradeNotification giftPaid = new GiftPaidUpgradeNotification(gifterIsAnon);
+                                ChatNotificationsEventArgs eventArgs = new ChatNotificationsEventArgs(broadcaster, chatter, isChatterAnon, color, badges, systemMessage,
+                                    messageID, message, noticeType, giftPaidUpgrade: giftPaid);
+                                OnChatNotifications?.Invoke(this, eventArgs);
+                            }
+                            else
+                            {
+                                User gifter = new User((string)giftPaidInfo["gifter_user_id"], (string)giftPaidInfo["gifter_user_name"], (string)giftPaidInfo["gifter_user_login"]);
+                                GiftPaidUpgradeNotification giftPaid = new GiftPaidUpgradeNotification(gifterIsAnon, gifter);
+                                ChatNotificationsEventArgs eventArgs = new ChatNotificationsEventArgs(broadcaster, chatter, isChatterAnon, color, badges, systemMessage,
+                                    messageID, message, noticeType, giftPaidUpgrade: giftPaid);
+                                OnChatNotifications?.Invoke(this, eventArgs);
+                            }
+                        }
                         break;
                     }
 
                 case "prime_paid_upgrade":
                     {
+                        JObject primePaidInfo = (JObject)args["prime_paid_upgrade"];
+                        if (primePaidInfo != null)
+                        {
+                            PrimeUpgradeNotification prime = new PrimeUpgradeNotification((int)primePaidInfo["sub_tier"]);
+                            ChatNotificationsEventArgs eventArgs = new ChatNotificationsEventArgs(broadcaster, chatter, isChatterAnon, color, badges, systemMessage,
+                                messageID, message, noticeType, primePaidUpgrade: prime);
+                            OnChatNotifications?.Invoke(this, eventArgs);
+                        }
                         break;
                     }
 
                 case "raid":
                     {
+                        JObject raidInfo = (JObject)args["raid"];
+                        if (raidInfo != null)
+                        {
+                            User raider = new User((string)raidInfo["user_id"], (string)raidInfo["user_name"], (string)raidInfo["user_login"]);
+                            int count = (int)raidInfo["viewer_count"];
+                            string imageURL = (string)raidInfo["profile_image_url"];
+                            RaidNotification raid = new RaidNotification(raider, count, imageURL);
+                            ChatNotificationsEventArgs eventArgs = new ChatNotificationsEventArgs(broadcaster, chatter, isChatterAnon, color, badges, systemMessage,
+                                messageID, message, noticeType, raid: raid);
+                            OnChatNotifications?.Invoke(this, eventArgs);
+                        }
                         break;
                     }
 
@@ -309,22 +417,64 @@ namespace TwitchEventSubWebsocket
 
                 case "pay_it_foward":
                     {
+                        JObject payItInfo = (JObject)args["pay_it_forward"];
+                        if (payItInfo != null)
+                        {
+                            bool isGifterAnon = (bool)payItInfo["gifter_is_anonymous"];
+                            if (isGifterAnon)
+                            {
+                                ChatNotificationsEventArgs eventArgs = new ChatNotificationsEventArgs(broadcaster, chatter, isChatterAnon, color, badges, systemMessage,
+                                    messageID, message, noticeType, payItForward: new PayItForwardNotification(isGifterAnon));
+                                OnChatNotifications?.Invoke(this, eventArgs);
+                            }
+                            else
+                            {
+                                User gifter = new User((string)payItInfo["gifter_user_id"], (string)payItInfo["gifter_user_name"], (string)payItInfo["gifter_user_login"]);
+                                ChatNotificationsEventArgs eventArgs = new ChatNotificationsEventArgs(broadcaster, chatter, isChatterAnon, color, badges, systemMessage,
+                                    messageID, message, noticeType, payItForward: new PayItForwardNotification(isGifterAnon, gifter));
+                                OnChatNotifications?.Invoke(this, eventArgs);
+                            }
+                        }
                         break;
                     }
 
                 case "announcement":
                     {
-
+                        JObject annoucementInfo = (JObject)args["announcement"];
+                        if (annoucementInfo != null)
+                        {
+                            AnnouncementNotification announcement = new AnnouncementNotification((string)annoucementInfo["color"]);
+                            ChatNotificationsEventArgs eventArgs = new ChatNotificationsEventArgs(broadcaster, chatter, isChatterAnon, color, badges, systemMessage,
+                                messageID, message, noticeType, announcement: announcement);
+                            OnChatNotifications?.Invoke(this, eventArgs);
+                        }
                         break;
                     }
 
                 case "bits_badge_tier":
                     {
+                        JObject bitsBadgeInfo = (JObject)args["bits_badge_tier"];
+                        if (bitsBadgeInfo != null)
+                        {
+                            ChatNotificationsEventArgs eventArgs = new ChatNotificationsEventArgs(broadcaster, chatter, isChatterAnon, color, badges, systemMessage,
+                                messageID, message, noticeType, bitsBadge: new BitsBadgeNotification((int)bitsBadgeInfo["tier"]));
+                            OnChatNotifications?.Invoke(this, eventArgs);
+                        }
                         break;
                     }
 
                 case "charity_donation":
                     {
+                        JObject charityInfo = (JObject)args["charity_donation"];
+                        if (charityInfo != null)
+                        {
+                            string charityName = (string)charityInfo["charity_name"];
+                            JObject amountInfo = (JObject)charityInfo["amount"];
+                            CharityNotfication charity = new CharityNotfication(charityName, new Amount((int)amountInfo?["value"], (int)amountInfo?["decimal_place"], (string)amountInfo?["currency"]));
+                            ChatNotificationsEventArgs eventArgs = new ChatNotificationsEventArgs(broadcaster, chatter, isChatterAnon, color, badges, systemMessage,
+                                messageID, message, noticeType, charityDonation: charity);
+                            OnChatNotifications?.Invoke(this, eventArgs);
+                        }
                         break;
                     }
             }
