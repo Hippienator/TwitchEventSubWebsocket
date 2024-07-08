@@ -19,10 +19,10 @@ namespace TwitchEventSubWebsocket
         /// <summary>
         /// The ID of the websocket connection.
         /// </summary>
-        public string? SessionID 
+        public string? SessionID
         {
-            get { return sessionID; } 
-            set { if (Subscribe != null) Subscribe.WebsocketID = value; sessionID = value; } 
+            get { return sessionID; }
+            set { if (Subscribe != null) Subscribe.WebsocketID = value; sessionID = value; }
         }
 
         /// <summary>
@@ -79,6 +79,11 @@ namespace TwitchEventSubWebsocket
         /// Fires when someone subscribes to a channel being monitored for new subscriptions. Does not fire on resubs.
         /// </summary>
         public event EventHandler<ChannelSubscribeEventArgs> OnChannelSubscribe;
+
+        /// <summary>
+        /// Fires when a chat notification happens. There are a lot of different types of notifications that can fire this.
+        /// </summary>
+        public event EventHandler<ChatNotificationsEventArgs> OnChatNotifications;
 
         #endregion
 
@@ -206,15 +211,15 @@ namespace TwitchEventSubWebsocket
             {
                 case "channel.follow":
                     {
-                        OnChannelFollow?.Invoke(this, new ChannelFollowEventArgs((string)args["user_id"], (string)args["user_login"], (string)args["user_name"], 
+                        OnChannelFollow?.Invoke(this, new ChannelFollowEventArgs((string)args["user_id"], (string)args["user_login"], (string)args["user_name"],
                             (string)args["broadcaster_user_id"], (string)args["broadcaster_user_login"], (string)args["broadcaster_user_name"], (DateTime)args["followed_at"]));
                         break;
                     }
 
                 case "channel.raid":
                     {
-                        OnRaid?.Invoke(this, new RaidEventArgs((string)args["from_broadcaster_user_id"], (string)args["from_broadcaster_user_login"], 
-                            (string)args["from_broadcaster_user_name"], (string)args["to_broadcaster_user_id"], (string)args["to_broadcaster_user_login"], 
+                        OnRaid?.Invoke(this, new RaidEventArgs((string)args["from_broadcaster_user_id"], (string)args["from_broadcaster_user_login"],
+                            (string)args["from_broadcaster_user_name"], (string)args["to_broadcaster_user_id"], (string)args["to_broadcaster_user_login"],
                             (string)args["to_broadcaster_user_name"], (int)args["viewers"]));
                         break;
                     }
@@ -234,8 +239,159 @@ namespace TwitchEventSubWebsocket
                         OnChannelSubscribe?.Invoke(this, new ChannelSubscribeEventArgs(user, broadcaster, (int)args["tier"], (bool)args["is_gift"]));
                         break;
                     }
+
+                case "channel.chat.notification":
+                    {
+                        ChatNotificationHandler(args);
+                        break;
+                    }
             }
         }
 
+
+        private void ChatNotificationHandler(JObject args)
+        {
+            User broadcaster = new User((string)args["broadcaster_user_id"], (string)args["broadcaster_user_name"], (string)args["broadcaster_user_login"]);
+            User chatter = new User((string)args["chatter_user_id"], (string)args["chatter_user_name"], (string)args["chatter_user_login"]);
+            bool isChatterAnon = (bool)args["chatter_is_anonymous"];
+            string color = (string)args["color"];
+            Badge[] badges = BadgesHandler((JArray)args["badges"]);
+            string systemMessage = (string)args["system_message"];
+            string messageID = (string)args["message_id"];
+            MessageInformation message = MessageBuilder((JObject)args["message"]);
+            string noticeType = (string)args["notice_type"];
+            
+            switch(noticeType)
+            {
+                case "sub":
+                    {
+
+                        break;
+                    }
+
+                case "resub":
+                    {
+                        break;
+                    }
+
+                case "sub_gift":
+                    {
+                        break;
+                    }
+
+                case "community_sub_gift":
+                    {
+                        break;
+                    }
+
+                case "gift_paid_upgrade":
+                    {
+                        break;
+                    }
+
+                case "prime_paid_upgrade":
+                    {
+                        break;
+                    }
+
+                case "raid":
+                    {
+                        break;
+                    }
+
+                case "unraid":
+                    {
+                        ChatNotificationsEventArgs eventArgs = new ChatNotificationsEventArgs(broadcaster, chatter, isChatterAnon, color, badges, systemMessage,
+                            messageID, message, noticeType);
+                        OnChatNotifications?.Invoke(this, eventArgs);
+                        break;
+                    }
+
+                case "pay_it_foward":
+                    {
+                        break;
+                    }
+
+                case "announcement":
+                    {
+
+                        break;
+                    }
+
+                case "bits_badge_tier":
+                    {
+                        break;
+                    }
+
+                case "charity_donation":
+                    {
+                        break;
+                    }
+            }
+        }
+
+        private Badge[] BadgesHandler(JArray args)
+        {
+            List<Badge> badges = new List<Badge>();
+            foreach (JObject badge in args)
+                badges.Add(new Badge((string)badge["set_id"], (string)badge["id"], (string)badge["info"]));
+
+            return badges.ToArray();
+        }
+
+        private MessageInformation MessageBuilder(JObject args)
+        {
+            string text = (string)args["text"];
+            JArray fragmentArray = (JArray)args["fragment"];
+            List<MessageFragment> fragments = new List<MessageFragment>();
+
+            if (fragmentArray != null)
+            {
+                foreach (JObject fragment in fragmentArray)
+                {
+                    string type = (string)fragment["type"];
+                    string fragtext = (string)fragment["text"];
+                    switch (type)
+                    {
+                        case "cheeremote":
+                            {
+                                CheerEmote cheerEmote = new CheerEmote((string)fragment["prefix"], (int)fragment["bits"], (int)fragment["tier"]);
+                                fragments.Add(new MessageFragment(type, fragtext, cheerEmote));
+                                break;
+                            }
+
+                        case "emote":
+                            {
+                                JArray jArray = (JArray)fragment["formant"];
+                                List<string> formats = new List<string>();
+                                if (jArray != null)
+                                {
+                                    foreach (string format in jArray)
+                                        formats.Add(format);
+                                }
+                                Emote emote = new Emote((string)fragment["id"], (string)fragment["emote_set_id"], (string)fragment["owner_id"], formats.ToArray());
+                                fragments.Add(new MessageFragment(type, fragtext, emote: emote));
+                                break;
+                            }
+
+                        case "mention":
+                            {
+                                User user = new User((string)fragment["user_id"], (string)fragment["user_name"], (string)fragment["user_login"]);
+                                fragments.Add(new MessageFragment(type, fragtext, mention: new Mention(user)));
+                                break;
+                            }
+
+                        case "text":
+                            {
+                                fragments.Add(new MessageFragment(type, fragtext));
+                                break;
+                            }
+                    }
+                }
+
+            }
+
+            return new MessageInformation(text, fragments.ToArray());
+        }
     }
 }
