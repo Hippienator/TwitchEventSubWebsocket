@@ -64,7 +64,7 @@ namespace TwitchEventSubWebsocket.SubcriptionHandling
         public bool SubscribeToChatNotification(string broadcasterID, string userID, bool TwitchCLI = false)
         {
             //Currently not implemented in the CLI.
-            if (!TwitchCLI)
+            if (TwitchCLI)
                 return false;
 
             SubParameters json = new SubParameters();

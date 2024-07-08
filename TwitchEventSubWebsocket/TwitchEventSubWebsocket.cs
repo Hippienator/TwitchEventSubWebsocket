@@ -492,7 +492,7 @@ namespace TwitchEventSubWebsocket
         private MessageInformation MessageBuilder(JObject args)
         {
             string text = (string)args["text"];
-            JArray fragmentArray = (JArray)args["fragment"];
+            JArray fragmentArray = (JArray)args["fragments"];
             List<MessageFragment> fragments = new List<MessageFragment>();
 
             if (fragmentArray != null)
@@ -505,28 +505,31 @@ namespace TwitchEventSubWebsocket
                     {
                         case "cheeremote":
                             {
-                                CheerEmote cheerEmote = new CheerEmote((string)fragment["prefix"], (int)fragment["bits"], (int)fragment["tier"]);
+                                JObject cheerEmoteInfo = (JObject)fragment["cheeremote"];
+                                CheerEmote cheerEmote = new CheerEmote((string)cheerEmoteInfo?["prefix"], (int)cheerEmoteInfo?["bits"], (int)cheerEmoteInfo?["tier"]);
                                 fragments.Add(new MessageFragment(type, fragtext, cheerEmote));
                                 break;
                             }
 
                         case "emote":
                             {
-                                JArray jArray = (JArray)fragment["formant"];
+                                JObject emoteInfo = (JObject)fragment["emote"];
+                                JArray jArray = (JArray)emoteInfo?["format"];
                                 List<string> formats = new List<string>();
                                 if (jArray != null)
                                 {
                                     foreach (string format in jArray)
                                         formats.Add(format);
                                 }
-                                Emote emote = new Emote((string)fragment["id"], (string)fragment["emote_set_id"], (string)fragment["owner_id"], formats.ToArray());
+                                Emote emote = new Emote((string)emoteInfo?["id"], (string)emoteInfo?["emote_set_id"], (string)emoteInfo?["owner_id"], formats.ToArray());
                                 fragments.Add(new MessageFragment(type, fragtext, emote: emote));
                                 break;
                             }
 
                         case "mention":
                             {
-                                User user = new User((string)fragment["user_id"], (string)fragment["user_name"], (string)fragment["user_login"]);
+                                JObject mentionInfo = (JObject)fragment["mention"];
+                                User user = new User((string)mentionInfo?["user_id"], (string)mentionInfo?["user_name"], (string)mentionInfo?["user_login"]);
                                 fragments.Add(new MessageFragment(type, fragtext, mention: new Mention(user)));
                                 break;
                             }
