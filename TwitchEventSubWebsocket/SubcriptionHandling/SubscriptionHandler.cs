@@ -102,5 +102,17 @@ namespace TwitchEventSubWebsocket.SubcriptionHandling
             string parameters = JsonConvert.SerializeObject(json);
             return Subscribe(parameters, TwitchCLI).Result;
         }
-    }
+        public bool SubscribeToChannelFollow(string broadcasterID, bool TwitchCLI = false)
+        {
+            SubParameters json = new SubParameters();
+            json.type = "channel.follow";
+            json.version = "2";
+            json.transport.Add("session_id", WebsocketID);
+            json.condition.Add("broadcaster_user_id", broadcasterID);
+            json.condition.Add("moderator_user_id", broadcasterID);
+
+
+            string parameters = JsonConvert.SerializeObject(json);
+            return Subscribe(parameters, TwitchCLI).Result;
+        }
 }
