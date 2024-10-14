@@ -85,6 +85,16 @@ namespace TwitchEventSubWebsocket
         /// </summary>
         public event EventHandler<ChatNotificationsEventArgs> OnChatNotifications;
 
+        /// <summary>
+        /// Fires when a subscribed channel starts streaming.
+        /// </summary>
+        public event EventHandler<StreamOnlineEventArgs> OnStreamOnline;
+
+        /// <summary>
+        /// Fires when a subscribed channel stops streaming.
+        /// </summary>
+        public event EventHandler<StreamOfflineEventArgs> OnStreamOffline;
+
         #endregion
 
         public EventSubWebsocket(string url, string clientID = "", string accessToken = "")
@@ -243,6 +253,20 @@ namespace TwitchEventSubWebsocket
                 case "channel.chat.notification":
                     {
                         ChatNotificationHandler(args);
+                        break;
+                    }
+
+                case "stream.online":
+                    {
+                        User broadcaster = new User((string)args["broadcaster_user_id"], (string)args["broadcaster_user_login"], (string)args["broadcaster_user_name"]);
+                        OnStreamOnline?.Invoke(this, new StreamOnlineEventArgs((int)args["id"], broadcaster, (string)args["type"], (DateTimeOffset)args["started_at"]));
+                        break;
+                    }
+
+                case "stream.offline":
+                    {
+                        User broadcaster = new User((string)args["broadcaster_user_id"], (string)args["broadcaster_user_login"], (string)args["broadcaster_user_name"]);
+                        OnStreamOffline?.Invoke(this, new StreamOfflineEventArgs(broadcaster));
                         break;
                     }
             }

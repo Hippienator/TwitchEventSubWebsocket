@@ -78,5 +78,29 @@ namespace TwitchEventSubWebsocket.SubcriptionHandling
             string parameters = JsonConvert.SerializeObject(json);
             return Subscribe(parameters, TwitchCLI).Result;
         }
+
+        public bool SubscribeToStreamOnline(string broadcasterID, bool TwitchCLI = false)
+        {
+            SubParameters json = new SubParameters();
+            json.type = "stream.online";
+            json.version = "1";
+            json.transport.Add("session_id", WebsocketID);
+            json.condition.Add("broadcaster_user_id", broadcasterID);
+
+            string parameters = JsonConvert.SerializeObject(json);
+            return Subscribe(parameters, TwitchCLI).Result;
+        }
+
+        public bool SubscribeToStreamOffline(string broadcasterID, bool TwitchCLI = false)
+        {
+            SubParameters json = new SubParameters();
+            json.type = "stream.offline";
+            json.version = "1";
+            json.transport.Add("session_id", WebsocketID);
+            json.condition.Add("broadcaster_user_id", broadcasterID);
+
+            string parameters = JsonConvert.SerializeObject(json);
+            return Subscribe(parameters, TwitchCLI).Result;
+        }
     }
 }
