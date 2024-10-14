@@ -38,7 +38,7 @@ namespace TwitchEventSubWebsocket.SubcriptionHandling
                     setSubscriptionUrl = "https://api.twitch.tv/helix/eventsub/subscriptions";
 
                 var response = await client.PostAsync(setSubscriptionUrl, new StringContent(paramters, Encoding.UTF8, "application/json"));
-                
+
                 return response.IsSuccessStatusCode;
             }
         }
@@ -55,7 +55,7 @@ namespace TwitchEventSubWebsocket.SubcriptionHandling
                 json.condition.Add("from_broadcaster_user_id", fromBroadcasterID);
             else
                 return false;
-            
+
 
             string parameters = JsonConvert.SerializeObject(json);
             return Subscribe(parameters, TwitchCLI).Result;
@@ -115,4 +115,5 @@ namespace TwitchEventSubWebsocket.SubcriptionHandling
             string parameters = JsonConvert.SerializeObject(json);
             return Subscribe(parameters, TwitchCLI).Result;
         }
+    }
 }
