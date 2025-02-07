@@ -20,7 +20,7 @@ namespace TwitchEventSubWebsocket.Types.Event
         /// <summary>
         /// The ID of the stream.
         /// </summary>
-        public int ID { get; }
+        public string ID { get; }
 
         /// <summary>
         /// Information on the broadcaster of the stream.
@@ -37,7 +37,7 @@ namespace TwitchEventSubWebsocket.Types.Event
         /// </summary>
         public DateTimeOffset StartedAt { get; }
 
-        public StreamOnlineEventArgs(int iD, User broadcaster, string type, DateTimeOffset startedAt)
+        public StreamOnlineEventArgs(string iD, User broadcaster, string type, DateTimeOffset startedAt)
         {
             ID = iD;
             Broadcaster = broadcaster;

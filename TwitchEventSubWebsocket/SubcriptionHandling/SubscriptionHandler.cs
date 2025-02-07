@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Net.Http;
+using System;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using Newtonsoft.Json;
 
 
 namespace TwitchEventSubWebsocket.SubcriptionHandling
@@ -16,6 +15,10 @@ namespace TwitchEventSubWebsocket.SubcriptionHandling
         private string ClientID;
         private string AccessToken;
         public string? WebsocketID;
+        /// <summary>
+        /// Fires when a subscription returns the status code for unauthorized
+        /// </summary>
+        public event EventHandler<AuthorizationFailedEventArgs>? OnAuthorizationFailed;
 
         public SubscriptionHandler(string clientID, string accessToken)
         {
@@ -23,7 +26,17 @@ namespace TwitchEventSubWebsocket.SubcriptionHandling
             AccessToken = accessToken;
         }
 
-        private async Task<bool> Subscribe(string paramters, bool TwitchCLI)
+        public void UpdateToken(string accessToken)
+        {
+            AccessToken = accessToken;
+        }
+
+        public void UpdateClient(string clientID)
+        {
+            ClientID = clientID;
+        }
+
+        public async Task<HttpStatusCode> Subscribe(string paramters, bool TwitchCLI)
         {
             using (HttpClient client = new HttpClient())
             {
@@ -39,11 +52,16 @@ namespace TwitchEventSubWebsocket.SubcriptionHandling
 
                 var response = await client.PostAsync(setSubscriptionUrl, new StringContent(paramters, Encoding.UTF8, "application/json"));
 
-                return response.IsSuccessStatusCode;
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    OnAuthorizationFailed?.Invoke(this, new AuthorizationFailedEventArgs(paramters, TwitchCLI));
+                }
+
+                return response.StatusCode;
             }
         }
 
-        public bool SubscribeToChannelRaid(string toBroadcasterID = "", string fromBroadcasterID = "", bool TwitchCLI = false)
+        public HttpStatusCode SubscribeToChannelRaid(string toBroadcasterID = "", string fromBroadcasterID = "", bool TwitchCLI = false)
         {
             SubParameters json = new SubParameters();
             json.type = "channel.raid";
@@ -54,18 +72,18 @@ namespace TwitchEventSubWebsocket.SubcriptionHandling
             else if (fromBroadcasterID != "")
                 json.condition.Add("from_broadcaster_user_id", fromBroadcasterID);
             else
-                return false;
+                return HttpStatusCode.NotImplemented;
 
 
             string parameters = JsonConvert.SerializeObject(json);
             return Subscribe(parameters, TwitchCLI).Result;
         }
 
-        public bool SubscribeToChatNotification(string broadcasterID, string userID, bool TwitchCLI = false)
+        public HttpStatusCode SubscribeToChatNotification(string broadcasterID, string userID, bool TwitchCLI = false)
         {
             //Currently not implemented in the CLI.
             if (TwitchCLI)
-                return false;
+                return HttpStatusCode.NotImplemented;
 
             SubParameters json = new SubParameters();
             json.type = "channel.chat.notification";
@@ -79,7 +97,7 @@ namespace TwitchEventSubWebsocket.SubcriptionHandling
             return Subscribe(parameters, TwitchCLI).Result;
         }
 
-        public bool SubscribeToStreamOnline(string broadcasterID, bool TwitchCLI = false)
+        public HttpStatusCode SubscribeToStreamOnline(string broadcasterID, bool TwitchCLI = false)
         {
             SubParameters json = new SubParameters();
             json.type = "stream.online";
@@ -91,7 +109,7 @@ namespace TwitchEventSubWebsocket.SubcriptionHandling
             return Subscribe(parameters, TwitchCLI).Result;
         }
 
-        public bool SubscribeToStreamOffline(string broadcasterID, bool TwitchCLI = false)
+        public HttpStatusCode SubscribeToStreamOffline(string broadcasterID, bool TwitchCLI = false)
         {
             SubParameters json = new SubParameters();
             json.type = "stream.offline";
@@ -102,7 +120,7 @@ namespace TwitchEventSubWebsocket.SubcriptionHandling
             string parameters = JsonConvert.SerializeObject(json);
             return Subscribe(parameters, TwitchCLI).Result;
         }
-        public bool SubscribeToChannelFollow(string broadcasterID, bool TwitchCLI = false)
+        public HttpStatusCode SubscribeToChannelFollow(string broadcasterID, bool TwitchCLI = false)
         {
             SubParameters json = new SubParameters();
             json.type = "channel.follow";
@@ -110,7 +128,6 @@ namespace TwitchEventSubWebsocket.SubcriptionHandling
             json.transport.Add("session_id", WebsocketID);
             json.condition.Add("broadcaster_user_id", broadcasterID);
             json.condition.Add("moderator_user_id", broadcasterID);
-
 
             string parameters = JsonConvert.SerializeObject(json);
             return Subscribe(parameters, TwitchCLI).Result;
