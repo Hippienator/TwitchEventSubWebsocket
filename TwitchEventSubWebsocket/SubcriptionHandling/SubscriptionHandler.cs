@@ -81,10 +81,6 @@ namespace TwitchEventSubWebsocket.SubcriptionHandling
 
         public HttpStatusCode SubscribeToChannelPointsCustomRewardsRedemptionAdd(string broadcasterID, string rewardID = "", bool TwitchCLI = false)
         {
-            //Currently not implemented in the CLI.
-            if (TwitchCLI)
-                return HttpStatusCode.NotImplemented;
-
             SubParameters json = new SubParameters();
             json.type = "channel.channel_points_custom_reward_redemption.add";
             json.version = "1";
