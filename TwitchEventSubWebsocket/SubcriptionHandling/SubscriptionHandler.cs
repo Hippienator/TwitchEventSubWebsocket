@@ -79,6 +79,25 @@ namespace TwitchEventSubWebsocket.SubcriptionHandling
             return Subscribe(parameters, TwitchCLI).Result;
         }
 
+        public HttpStatusCode SubscribeToChannelPointsCustomRewardsRedemptionAdd(string broadcasterID, string rewardID = "", bool TwitchCLI = false)
+        {
+            //Currently not implemented in the CLI.
+            if (TwitchCLI)
+                return HttpStatusCode.NotImplemented;
+
+            SubParameters json = new SubParameters();
+            json.type = "channel.channel_points_custom_reward_redemption.add";
+            json.version = "1";
+            json.transport.Add("session_id", WebsocketID);
+            json.condition.Add("broadcaster_user_id", broadcasterID);
+            if (rewardID != "")
+                json.condition.Add("reward_id", rewardID);
+
+
+            string parameters = JsonConvert.SerializeObject(json);
+            return Subscribe(parameters, TwitchCLI).Result;
+        }
+
         public HttpStatusCode SubscribeToChatNotification(string broadcasterID, string userID, bool TwitchCLI = false)
         {
             //Currently not implemented in the CLI.
